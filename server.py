@@ -40,6 +40,7 @@ def upzibiao(alist,key,value,**kw):
 def getzibiao(shujuid,url,head,kongjian):
     data = {"data_id":shujuid}
     chaxun = requests.post(url,headers=head,data=json.dumps(data))
+    #print(chaxun.text)
     return json.loads(chaxun.text)['data'][kongjian]
 
 
@@ -66,7 +67,11 @@ def get_eq(hd,url,**kw):
     result = requests.post(url,headers=hd,data=json.dumps(data))
     if result.text == '{"data":[]}':
         return 0
-    return json.loads(result.text)["data"][0]["_id"]
+    else:
+        try:
+            return json.loads(result.text)["data"][0]["_id"]
+        except KeyError:
+            return 0
 
 def dingsignature(nonce,payload,token,timestamp):
 	slist = [nonce,payload,token,timestamp]
@@ -648,12 +653,13 @@ def xfwhuikuan():
     yingshouriqi = data['_widget_1539757154864']
     yingshoujine = data['_widget_1541138889132']
     shoukuanjieguo = data['_widget_1539756768134']
+    daokuanriqi = data['_widget_1516789267436']
     hetongid = get_eq(headers,hturl+'data',_widget_1516698509185=hetongbianhao)
     if op == 'data_update' and flowState == 1:
         if hetongid != 0:
             shoukuanmingxi = getzibiao(hetongid,hturl+'data_retrieve',headers,'_widget_1516698509441')
             data2 = {"data_id":hetongid,
-                    "data":{'_widget_1516698509441':{'value':upzibiao(shoukuanmingxi,'_widget_1516698509476',yingshouriqi,_widget_1516698509493=shoukuanjieguo)}}
+                    "data":{'_widget_1516698509441':{'value':upzibiao(shoukuanmingxi,'_widget_1516698509476',yingshouriqi,_widget_1547106268040=daokuanriqi,_widget_1516698509493=shoukuanjieguo)}}
                     }
             requests.post(hturl+'data_update',headers=headers,data=json.dumps(data2))
             skmxurl = r'https://www.jiandaoyun.com/api/v1/app/5a66fb220e99fa0343e995bc/entry/5c25e8ee6a042e44db9796b4/'
@@ -683,26 +689,28 @@ def xfwfukuan():
     op = json.loads(payload)['op']
     if op == 'data_update' and flowstate == 1:
         for i in fukuanmingxi:
-            time.sleep(1)
+            time.sleep(0.2)
             hetongbianhao = i['_widget_1543229358304']
             htid = get_eq(headers,hturl+'data',_widget_1516698509185=hetongbianhao)
+            time.sleep(0.2)
             jieguo = i['_widget_1540863688114']
             fukuanjine = i['_widget_1541157053075']
             caigoubianhao = i['_widget_1540803685296']['key']
-            shijiriqi = i['_widget_1519725624849']
             if htid != 0:
                 fkmx = getzibiao(htid,hturl+'data_retrieve',headers,'_widget_1522116941248')
                 data = {'data_id':htid,
                     'data':{
-                        '_widget_1522116941248':{'value' : upzibiao(fkmx,'_widget_1542783982806',caigoubianhao,_widget_1541381642407=shijiriqi,_widget_1541385249386=fukuanjine,_widget_1522116941275=jieguo)}
+                        '_widget_1522116941248':{'value' : upzibiao(fkmx,'_widget_1542783982806',caigoubianhao,_widget_1541381642407=fukuanshijian,_widget_1541385249386=fukuanjine,_widget_1522116941275=jieguo)}
                         }
                     }
                 requests.post(hturl+'data_update',headers=headers,data=json.dumps(data))
             if jieguo == yifu:
                 chaxun = r'https://www.jiandaoyun.com/api/v1/app/5a66fb220e99fa0343e995bc/entry/5bc97119075f3674e4a6e0f8/data'
                 mxid = get_eq(headers,chaxun,_widget_1539928346061=hetongbianhao,_widget_1542847610802=caigoubianhao)
+                print(mxid)
+                time.sleep(0.2)
                 if mxid != 0:
-                    form_data = {'data_id':biaodanid}
+                    form_data = {'data_id':mxid}
                     shanchu = r'https://www.jiandaoyun.com/api/v1/app/5a66fb220e99fa0343e995bc/entry/5bc97119075f3674e4a6e0f8/data_delete'
                     requests.post(shanchu,headers=headers,data=json.dumps(form_data))
     nonce = request.args.get('nonce')
